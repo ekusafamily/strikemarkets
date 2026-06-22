@@ -276,7 +276,7 @@ export default function AdminPage() {
                               fontWeight: 700,
                             }}
                           >
-                            {striking === m.id ? '...' : `⚡ Strike: ${opt.name}`} ({(opt.buy * 100).toFixed(0)}%)
+                            {striking === m.id ? '...' : `⚡ Strike: ${opt.name}`} ({(opt.fair * 100).toFixed(0)}%)
                           </button>
                         ))}
                       </div>

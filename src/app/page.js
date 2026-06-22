@@ -253,8 +253,8 @@ function MarketCard({ market, onClick }) {
           <div className="option-row" key={opt.id}>
             <span className="option-name">{opt.name}</span>
             {/* Show ONLY the buy price — users see this as "the" probability */}
-            <span className={`option-price ${getPriceClass(opt.buy)}`}>
-              {(opt.buy * 100).toFixed(1)}%
+            <span className={`option-price ${getPriceClass(opt.fair)}`}>
+              {(opt.fair * 100).toFixed(1)}%
             </span>
           </div>
         ))}
@@ -273,18 +273,10 @@ function MarketCard({ market, onClick }) {
           );
         })}
       </div>
-      <div className="market-meta">
+      <div className="market-meta" style={{ display: 'flex', justifyContent: 'flex-start' }}>
         <div className="market-meta-item">
-          <span>Pool:</span>
-          <span className="market-meta-value">{Number(market.total_pool).toLocaleString()}</span>
-        </div>
-        <div className="market-meta-item">
-          <span>Volume:</span>
-          <span className="market-meta-value">{Number(market.volume).toLocaleString()}</span>
-        </div>
-        <div className="market-meta-item">
-          <span>Options:</span>
-          <span className="market-meta-value">{market.options.length}</span>
+          <span>Total Volume Traded:</span>
+          <span className="market-meta-value" style={{ color: 'var(--text-secondary)' }}>{Number(market.volume).toLocaleString()} VCoins</span>
         </div>
       </div>
     </div>
