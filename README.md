@@ -109,6 +109,8 @@ git push origin main
 | **Start Command** | `node .next/standalone/server.js` |
 | **Instance Type** | Free (or Starter for always-on) |
 
+> **Note:** `node init-db.js` runs automatically as part of `postbuild` — no shell access needed. The schema is idempotent (uses `IF NOT EXISTS`) so it never wipes existing data on redeployments.
+
 ### Step 3 — Add Environment Variables
 
 In the Render dashboard, go to your service → **Environment** tab, and add:

@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "postbuild": "node init-db.js",
     "start": "node .next/standalone/server.js"
   },
   "dependencies": {

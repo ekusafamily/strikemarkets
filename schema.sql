@@ -1,14 +1,8 @@
--- 5050 Markets Schema
--- Drop existing tables if they exist
-DROP TABLE IF EXISTS transactions CASCADE;
-DROP TABLE IF EXISTS positions CASCADE;
-DROP TABLE IF EXISTS market_options CASCADE;
-DROP TABLE IF EXISTS markets CASCADE;
-DROP TABLE IF EXISTS users CASCADE;
-DROP TABLE IF EXISTS system_stats CASCADE;
+-- Strike Markets Schema (Idempotent — safe to re-run on every deploy)
+-- Uses IF NOT EXISTS so existing data is never dropped
 
 -- Users table
-CREATE TABLE users (
+CREATE TABLE IF NOT EXISTS users (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   username TEXT UNIQUE NOT NULL,
   email TEXT UNIQUE,
@@ -20,13 +14,13 @@ CREATE TABLE users (
 );
 
 -- Markets table
-CREATE TABLE markets (
+CREATE TABLE IF NOT EXISTS markets (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   question TEXT NOT NULL,
   description TEXT DEFAULT '',
   category TEXT NOT NULL DEFAULT 'General',
   status TEXT NOT NULL DEFAULT 'open' CHECK (status IN ('open', 'resolved', 'canceled')),
-  outcome_resolved UUID, -- references winning market_options.id
+  outcome_resolved UUID,
   created_by UUID REFERENCES users(id),
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   end_date TIMESTAMPTZ,
@@ -34,7 +28,7 @@ CREATE TABLE markets (
 );
 
 -- Market Options table (multi-choice)
-CREATE TABLE market_options (
+CREATE TABLE IF NOT EXISTS market_options (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   market_id UUID NOT NULL REFERENCES markets(id) ON DELETE CASCADE,
   name TEXT NOT NULL,
@@ -43,7 +37,7 @@ CREATE TABLE market_options (
 );
 
 -- User positions per option
-CREATE TABLE positions (
+CREATE TABLE IF NOT EXISTS positions (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID NOT NULL REFERENCES users(id),
   market_id UUID NOT NULL REFERENCES markets(id),
@@ -54,7 +48,7 @@ CREATE TABLE positions (
 );
 
 -- Transaction log
-CREATE TABLE transactions (
+CREATE TABLE IF NOT EXISTS transactions (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID NOT NULL REFERENCES users(id),
   market_id UUID REFERENCES markets(id),
@@ -69,24 +63,25 @@ CREATE TABLE transactions (
 );
 
 -- System stats (key-value store for house tracking)
-CREATE TABLE system_stats (
+CREATE TABLE IF NOT EXISTS system_stats (
   key TEXT PRIMARY KEY,
   value NUMERIC(14, 4) NOT NULL DEFAULT 0
 );
 
--- Initialize system stats
+-- Seed system stats (ON CONFLICT: skip if row already exists — never resets live counters)
 INSERT INTO system_stats (key, value) VALUES
   ('total_volume', 0),
   ('total_fees', 0),
   ('total_spread_profit', 0),
   ('total_resolution_rake', 0),
-  ('total_house_profit', 0);
+  ('total_house_profit', 0)
+ON CONFLICT (key) DO NOTHING;
 
--- Indexes for performance
-CREATE INDEX idx_market_options_market ON market_options(market_id);
-CREATE INDEX idx_positions_user ON positions(user_id);
-CREATE INDEX idx_positions_market ON positions(market_id);
-CREATE INDEX idx_transactions_user ON transactions(user_id);
-CREATE INDEX idx_transactions_market ON transactions(market_id);
-CREATE INDEX idx_transactions_created ON transactions(created_at DESC);
-CREATE INDEX idx_markets_status ON markets(status);
+-- Indexes (IF NOT EXISTS supported via DO block)
+CREATE INDEX IF NOT EXISTS idx_market_options_market ON market_options(market_id);
+CREATE INDEX IF NOT EXISTS idx_positions_user ON positions(user_id);
+CREATE INDEX IF NOT EXISTS idx_positions_market ON positions(market_id);
+CREATE INDEX IF NOT EXISTS idx_transactions_user ON transactions(user_id);
+CREATE INDEX IF NOT EXISTS idx_transactions_market ON transactions(market_id);
+CREATE INDEX IF NOT EXISTS idx_transactions_created ON transactions(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_markets_status ON markets(status);
