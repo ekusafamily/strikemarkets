@@ -105,8 +105,8 @@ git push origin main
 | **Name** | `strikemarkets` |
 | **Region** | Choose nearest to your Supabase region |
 | **Runtime** | `Node` |
-| **Build Command** | `npm install && npm run build` |
-| **Start Command** | `npm start` |
+| **Build Command** | `npm install && npm run build && cp -r public .next/standalone/public && cp -r .next/static .next/standalone/.next/static` |
+| **Start Command** | `node .next/standalone/server.js` |
 | **Instance Type** | Free (or Starter for always-on) |
 
 ### Step 3 — Add Environment Variables

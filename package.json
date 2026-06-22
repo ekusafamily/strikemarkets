@@ -1,14 +1,14 @@
 {
-  "name": "5050markerts",
+  "name": "strikemarkets",
   "version": "0.1.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start"
+    "start": "node .next/standalone/server.js"
   },
   "dependencies": {
-    "bcryptjs": "^3.0.3",
+    "bcryptjs": "^2.4.3",
     "next": "16.2.9",
     "pg": "^8.22.0",
     "react": "19.2.4",

@@ -1,5 +1,4 @@
 import './globals.css';
-import Image from 'next/image';
 
 export const metadata = {
   title: 'Strike Markets - Virtual Prediction Market',
