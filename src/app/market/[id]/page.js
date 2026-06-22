@@ -196,16 +196,14 @@ export default function MarketPage() {
                 <h3 style={{ fontFamily: 'var(--font-mono)', fontSize: '0.9rem', marginBottom: 16, color: 'var(--text-secondary)' }}>RECENT ACTIVITY</h3>
                 <table className="data-table">
                   <thead>
-                    <tr><th>User</th><th>Action</th><th>Option</th><th>Amount</th><th>Time</th></tr>
+                    <tr><th>Option</th><th>Volume</th><th>Time</th></tr>
                   </thead>
                   <tbody>
                     {trades.map((tx) => (
                       <tr key={tx.id}>
-                        <td>{tx.username}</td>
-                        <td><span style={{ color: tx.type === 'buy' ? 'var(--accent-green)' : 'var(--accent-red)', fontWeight: 600, textTransform: 'uppercase', fontSize: '0.75rem' }}>{tx.type}</span></td>
                         <td>{tx.option_name}</td>
-                        <td className="mono">{Number(tx.amount_coins).toFixed(2)}</td>
-                        <td style={{ fontSize: '0.75rem' }}>{new Date(tx.created_at).toLocaleTimeString()}</td>
+                        <td className="mono" style={{ fontWeight: 600 }}>{Number(tx.amount_coins).toFixed(2)} VC</td>
+                        <td style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{new Date(tx.created_at).toLocaleTimeString()}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -267,36 +265,36 @@ export default function MarketPage() {
                     <div className="trade-preview">
                       {tradeAction === 'buy' ? (
                         <>
-                          <div className="trade-preview-row">
-                            <span className="trade-preview-label">Shares to receive</span>
-                            <span className="trade-preview-value green">{preview.shares}</span>
+                          <div className="trade-preview-row" style={{ paddingBottom: 12, borderBottom: '1px solid var(--border-color)', marginBottom: 8 }}>
+                            <span className="trade-preview-label" style={{ fontWeight: 800, fontSize: '1rem', color: 'var(--text-primary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Payout (Shares)</span>
+                            <span className="trade-preview-value green" style={{ fontWeight: 800, fontSize: '1.4rem' }}>{preview.shares}</span>
                           </div>
                           <div className="trade-preview-row">
-                            <span className="trade-preview-label">Price per share</span>
-                            <span className="trade-preview-value">{preview.price}</span>
+                            <span className="trade-preview-label" style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Price per share</span>
+                            <span className="trade-preview-value" style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{preview.price} VC</span>
                           </div>
                           <div className="trade-preview-row">
-                            <span className="trade-preview-label">Platform fee (2%)</span>
-                            <span className="trade-preview-value red">{preview.fee} VC</span>
+                            <span className="trade-preview-label" style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Platform fee (2%)</span>
+                            <span className="trade-preview-value red" style={{ fontSize: '0.75rem', opacity: 0.8 }}>{preview.fee} VC</span>
                           </div>
-                          <div className="trade-preview-row" style={{ borderTop: '1px solid var(--border-color)', paddingTop: 8, marginTop: 4 }}>
-                            <span className="trade-preview-label" style={{ fontWeight: 600 }}>Total cost</span>
-                            <span className="trade-preview-value amber">{preview.total} VC</span>
+                          <div className="trade-preview-row" style={{ marginTop: 4 }}>
+                            <span className="trade-preview-label" style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Total cost</span>
+                            <span className="trade-preview-value amber" style={{ fontSize: '0.85rem' }}>{preview.total} VC</span>
                           </div>
                         </>
                       ) : (
                         <>
-                          <div className="trade-preview-row">
-                            <span className="trade-preview-label">Coins to receive</span>
-                            <span className="trade-preview-value green">{preview.coins} VC</span>
+                          <div className="trade-preview-row" style={{ paddingBottom: 12, borderBottom: '1px solid var(--border-color)', marginBottom: 8 }}>
+                            <span className="trade-preview-label" style={{ fontWeight: 800, fontSize: '1rem', color: 'var(--text-primary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Payout (Coins)</span>
+                            <span className="trade-preview-value green" style={{ fontWeight: 800, fontSize: '1.4rem' }}>{preview.coins} VC</span>
                           </div>
                           <div className="trade-preview-row">
-                            <span className="trade-preview-label">Price per share</span>
-                            <span className="trade-preview-value">{preview.price}</span>
+                            <span className="trade-preview-label" style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Price per share</span>
+                            <span className="trade-preview-value" style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{preview.price} VC</span>
                           </div>
                           <div className="trade-preview-row">
-                            <span className="trade-preview-label">Platform fee (2%)</span>
-                            <span className="trade-preview-value red">{preview.fee} VC</span>
+                            <span className="trade-preview-label" style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Platform fee (2%)</span>
+                            <span className="trade-preview-value red" style={{ fontSize: '0.75rem', opacity: 0.8 }}>{preview.fee} VC</span>
                           </div>
                         </>
                       )}
