@@ -1,0 +1,17 @@
+{
+  "name": "5050markerts",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start"
+  },
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "next": "16.2.9",
+    "pg": "^8.22.0",
+    "react": "19.2.4",
+    "react-dom": "19.2.4"
+  }
+}
