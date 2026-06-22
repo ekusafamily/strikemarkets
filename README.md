@@ -105,8 +105,8 @@ git push origin main
 | **Name** | `strikemarkets` |
 | **Region** | Choose nearest to your Supabase region |
 | **Runtime** | `Node` |
-| **Build Command** | `npm install && npm run build && cp -r public .next/standalone/public && cp -r .next/static .next/standalone/.next/static` |
-| **Start Command** | `node .next/standalone/server.js` |
+| **Build Command** | `npm install && npm run build` |
+| **Start Command** | `npm start` |
 | **Instance Type** | Free (or Starter for always-on) |
 
 > **Note:** `node init-db.js` runs automatically as part of `postbuild` — no shell access needed. The schema is idempotent (uses `IF NOT EXISTS`) so it never wipes existing data on redeployments.
