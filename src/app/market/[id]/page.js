@@ -142,9 +142,7 @@ export default function MarketPage() {
         {market.description && <p className="page-subtitle">{market.description}</p>}
 
         <div style={{ display: 'flex', gap: 16, marginBottom: 24, fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-          <span>Pool: <strong style={{ color: 'var(--accent-amber)', fontFamily: 'var(--font-mono)' }}>{Number(market.total_pool).toLocaleString()}</strong></span>
-          <span>Volume: <strong style={{ color: 'var(--text-secondary)', fontFamily: 'var(--font-mono)' }}>{Number(market.volume).toLocaleString()}</strong></span>
-          <span>By: <strong style={{ color: 'var(--text-secondary)' }}>{market.creator_name}</strong></span>
+          <span>Total Volume Traded: <strong style={{ color: 'var(--text-secondary)', fontFamily: 'var(--font-mono)' }}>{Number(market.volume).toLocaleString()} VCoins</strong></span>
         </div>
 
         <div className="two-col">
@@ -163,9 +161,8 @@ export default function MarketPage() {
                     <div style={{ width: 12, height: 12, borderRadius: 3, background: colors[i % colors.length] }} />
                     <span className="option-name">{opt.name}</span>
                   </div>
-                  {/* Show ONLY the buy price — consistent with what users pay */}
-                  <span className={`option-price ${getPriceClass(opt.buy)}`} style={{ fontSize: '1.1rem' }}>
-                    {(opt.buy * 100).toFixed(1)}%
+                  <span className={`option-price ${getPriceClass(opt.fair)}`} style={{ fontSize: '1.1rem' }}>
+                    {(opt.fair * 100).toFixed(1)}%
                   </span>
                 </div>
               ))}
@@ -236,9 +233,8 @@ export default function MarketPage() {
                           onClick={() => setSelectedOption(opt.id)}
                         >
                           <span>{opt.name}</span>
-                          {/* Display buy price as "the" probability — no markup reveal */}
                           <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.85rem', color: tradeAction === 'buy' ? 'var(--accent-green)' : 'var(--accent-red)' }}>
-                            {(opt.buy * 100).toFixed(1)}%
+                            {(opt.fair * 100).toFixed(1)}%
                           </span>
                         </button>
                       ))}
