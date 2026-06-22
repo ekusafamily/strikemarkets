@@ -337,24 +337,10 @@ export default function HomePage() {
     setToast({ message: 'Logged out', type: 'success' });
   };
 
-  const handleClaim = async () => {
-    try {
-      const res = await fetch('/api/claim', { method: 'POST' });
-      const data = await res.json();
-      if (res.ok) {
-        setToast({ message: `Claimed 100 VCoins! Balance: ${data.new_balance.toLocaleString()}`, type: 'success' });
-        fetchUser();
-      } else {
-        setToast({ message: data.error, type: 'error' });
-      }
-    } catch {
-      setToast({ message: 'Connection error', type: 'error' });
-    }
-  };
 
   return (
     <>
-      <Navbar user={user} onLogin={() => setShowAuth(true)} onLogout={handleLogout} onClaim={handleClaim} activePage="Markets" />
+      <Navbar user={user} onLogin={() => setShowAuth(true)} onLogout={handleLogout} activePage="Markets" />
       <div className="page-container">
         <h1 className="page-title">Prediction Markets</h1>
         <p className="page-subtitle">Trade on outcomes with virtual coins. Pick your side, earn VCoins.</p>

@@ -15,7 +15,7 @@
   - 2% flat transaction fee on all trades
   - 20% resolution rake on all winnings
 - **User accounts** — register with username, email & password
-- **1,000 VCoins** starting balance + 100 free daily claim
+- **1,000 VCoins** starting balance
 - **Leaderboard** — ranked by net worth (balance + portfolio)
 - **Admin dashboard** at `/admin` (hidden from nav, direct URL access only)
   - Strike (resolve) markets — declare winner, distribute 80% to winners, 20% to house

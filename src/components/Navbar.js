@@ -28,7 +28,7 @@ function CoinIcon() {
   );
 }
 
-export default function Navbar({ user, onLogin, onLogout, onClaim, activePage = '' }) {
+export default function Navbar({ user, onLogin, onLogout, activePage = '' }) {
   const router = useRouter();
 
   const navLink = (href, label) => (
@@ -65,7 +65,6 @@ export default function Navbar({ user, onLogin, onLogout, onClaim, activePage = 
                 <CoinIcon />
                 {Number(user.balance).toLocaleString('en-US', { minimumFractionDigits: 2 })}
               </div>
-              <button className="btn btn-orange btn-sm" onClick={onClaim}>Claim 100</button>
               <button className="btn btn-ghost btn-sm" onClick={onLogout}>{user.username}</button>
             </>
           ) : (

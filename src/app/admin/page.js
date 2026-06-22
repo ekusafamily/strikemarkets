@@ -146,12 +146,6 @@ export default function AdminPage() {
       <Navbar
         user={user}
         onLogout={async () => { await fetch('/api/auth', { method: 'DELETE' }); router.push('/'); }}
-        onClaim={async () => {
-          const r = await fetch('/api/claim', { method: 'POST' });
-          const d = await r.json();
-          if (r.ok) { showToast(`Claimed 100 VC! Balance: ${d.new_balance}`); fetchData(); }
-          else showToast(d.error, 'error');
-        }}
         activePage="Admin"
       />
 
