@@ -60,12 +60,15 @@ export async function GET(request) {
           pool_coins: Number(o.pool_coins),
           total_shares_issued: Number(o.total_shares_issued),
           ...prices[o.id],
-        })),
+        })).sort((a, b) => b.fair - a.fair),
         total_pool: totalPool,
         volume: Number(volRes.rows[0].volume),
         winner_name: winnerName,
       });
     }
+
+    // Sort markets by volume descending
+    markets.sort((a, b) => b.volume - a.volume);
 
     return NextResponse.json({ markets });
   } catch (err) {

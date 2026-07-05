@@ -62,6 +62,12 @@ export async function GET(request, { params }) {
       [id]
     );
 
+    // Get price history for chart
+    const chartRes = await pool.query(
+      'SELECT option_id, fair_price, recorded_at FROM price_history WHERE market_id = $1 ORDER BY recorded_at ASC',
+      [id]
+    );
+
     return NextResponse.json({
       market: {
         ...market,
@@ -71,12 +77,13 @@ export async function GET(request, { params }) {
           pool_coins: Number(o.pool_coins),
           total_shares_issued: Number(o.total_shares_issued),
           ...prices[o.id],
-        })),
+        })).sort((a, b) => b.fair - a.fair),
         total_pool: totalPool,
         volume: Number(volRes.rows[0].volume),
       },
       userPositions,
       recentTrades: txRes.rows,
+      priceHistory: chartRes.rows,
     });
   } catch (err) {
     console.error('Market GET error:', err);

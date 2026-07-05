@@ -63,6 +63,12 @@ export async function POST(request) {
         }
       }
 
+      // Refund the 100 VC seed liquidity to the market creator
+      const creatorId = marketRes.rows[0].created_by;
+      if (creatorId) {
+        await client.query('UPDATE users SET balance = balance + 100 WHERE id = $1', [creatorId]);
+      }
+
       // Mark market as canceled and zero out pools
       await client.query('UPDATE markets SET status = $1 WHERE id = $2', ['canceled', market_id]);
       await client.query('UPDATE positions SET shares = 0, updated_at = NOW() WHERE market_id = $1', [market_id]);

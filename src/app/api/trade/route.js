@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import pool from '@/lib/db';
-import { calculateBuy, calculateSell } from '@/lib/parimutuel';
+import { calculateBuy, calculateSell, getFairPrices } from '@/lib/parimutuel';
 
 // POST /api/trade - Execute a buy or sell trade
 export async function POST(request) {
@@ -90,6 +90,16 @@ export async function POST(request) {
 
         await client.query('COMMIT');
 
+        // Record price snapshot for chart
+        const updatedOpts = await pool.query('SELECT * FROM market_options WHERE market_id = $1', [market_id]);
+        const fairPrices = getFairPrices(updatedOpts.rows);
+        for (const o of updatedOpts.rows) {
+          await pool.query(
+            'INSERT INTO price_history (market_id, option_id, fair_price) VALUES ($1, $2, $3)',
+            [market_id, o.id, fairPrices[o.id]]
+          );
+        }
+
         return NextResponse.json({
           success: true,
           trade: {
@@ -147,6 +157,16 @@ export async function POST(request) {
         await client.query(`UPDATE system_stats SET value = value + $1 WHERE key = 'total_house_profit'`, [result.totalHouseProfit]);
 
         await client.query('COMMIT');
+
+        // Record price snapshot for chart
+        const updatedOptsSell = await pool.query('SELECT * FROM market_options WHERE market_id = $1', [market_id]);
+        const fairPricesSell = getFairPrices(updatedOptsSell.rows);
+        for (const o of updatedOptsSell.rows) {
+          await pool.query(
+            'INSERT INTO price_history (market_id, option_id, fair_price) VALUES ($1, $2, $3)',
+            [market_id, o.id, fairPricesSell[o.id]]
+          );
+        }
 
         return NextResponse.json({
           success: true,

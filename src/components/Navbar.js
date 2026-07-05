@@ -54,7 +54,7 @@ export default function Navbar({ user, onLogin, onLogout, activePage = '' }) {
 
         <div className="navbar-links">
           {navLink('/', 'Markets')}
-          {navLink('/leaderboard', 'Leaderboard')}
+          {user && navLink('/history', 'History')}
           {user && navLink('/create', 'Create')}
         </div>
 

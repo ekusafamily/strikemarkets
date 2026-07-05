@@ -57,18 +57,20 @@ export default function AdminPage() {
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [toast, setToast] = useState(null);
-  const [activeTab, setActiveTab] = useState('open'); // 'open' | 'resolved' | 'canceled'
+  const [activeTab, setActiveTab] = useState('open'); // 'open' | 'resolved' | 'canceled' | 'leaderboard'
   const [striking, setStriking] = useState(null);
-  const [confirm, setConfirm] = useState(null); // { type, marketId, optionId?, marketQuestion }
+  const [confirm, setConfirm] = useState(null);
+  const [leaderboard, setLeaderboard] = useState([]);
 
   const showToast = (message, type = 'success') => setToast({ message, type });
 
   const fetchData = useCallback(async () => {
     try {
-      const [authRes, statsRes, marketsRes] = await Promise.all([
+      const [authRes, statsRes, marketsRes, lbRes] = await Promise.all([
         fetch('/api/auth').then(r => r.json()),
         fetch('/api/admin/stats').then(r => r.json()),
         fetch('/api/admin/markets').then(r => r.json()),
+        fetch('/api/leaderboard').then(r => r.json()),
       ]);
 
       if (!authRes.user?.is_admin) { router.push('/'); return; }
@@ -76,6 +78,7 @@ export default function AdminPage() {
       setStats(statsRes.stats);
       setTransactions(statsRes.recent_transactions || []);
       setAllMarkets(marketsRes.markets || []);
+      setLeaderboard(lbRes.leaderboard || []);
     } catch (e) {
       console.error(e);
     }
@@ -158,7 +161,7 @@ export default function AdminPage() {
           {[
             { label: 'Total Trade Volume', val: fmt(stats?.total_volume), color: 'orange', sub: 'VCoins traded' },
             { label: 'Total House Profit', val: fmt(stats?.total_house_profit), color: 'green', sub: 'All revenue combined' },
-            { label: 'Transaction Fees (2%)', val: fmt(stats?.total_fees), color: 'violet', sub: 'From buy/sell trades' },
+            { label: 'Transaction Fees (10%)', val: fmt(stats?.total_fees), color: 'violet', sub: 'From buy/sell trades' },
             { label: 'Spread & Markup Profit', val: fmt(stats?.total_spread_profit), color: 'orange', sub: '20% overround/markdown' },
             { label: 'Resolution Rake (20%)', val: fmt(stats?.total_resolution_rake), color: 'red', sub: 'From struck markets' },
           ].map(s => (
@@ -188,9 +191,10 @@ export default function AdminPage() {
           {/* Status tabs */}
           <div style={{ display: 'flex', borderBottom: '1px solid var(--border-color)' }}>
             {[
-              { key: 'open',     label: 'Open Markets',     count: openCount,     color: '#3b82f6' },
-              { key: 'resolved', label: 'Struck Markets',   count: resolvedCount, color: '#10b981' },
-              { key: 'canceled', label: 'Voided Markets',   count: canceledCount, color: '#ef4444' },
+              { key: 'open',        label: 'Open Markets',   count: openCount,     color: '#3b82f6' },
+              { key: 'resolved',    label: 'Struck Markets', count: resolvedCount, color: '#10b981' },
+              { key: 'canceled',    label: 'Voided Markets', count: canceledCount, color: '#ef4444' },
+              { key: 'leaderboard', label: 'Leaderboard',    count: leaderboard.length, color: '#f59e0b' },
             ].map(tab => (
               <button
                 key={tab.key}
@@ -311,6 +315,44 @@ export default function AdminPage() {
               ))
             )}
           </div>
+
+          {/* Leaderboard tab */}
+          {activeTab === 'leaderboard' && (
+            <div style={{ overflowX: 'auto' }}>
+              {leaderboard.length === 0 ? (
+                <div style={{ padding: '40px 24px', textAlign: 'center', color: 'var(--text-muted)' }}>No users yet</div>
+              ) : (
+                <table className="data-table">
+                  <thead>
+                    <tr>
+                      <th style={{ width: 60 }}>Rank</th>
+                      <th>Trader</th>
+                      <th style={{ textAlign: 'right' }}>Balance</th>
+                      <th style={{ textAlign: 'right' }}>Portfolio</th>
+                      <th style={{ textAlign: 'right' }}>Net Worth</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {leaderboard.map((entry, i) => (
+                      <tr key={entry.username}>
+                        <td>
+                          {i < 3 ? (
+                            <div className={`leaderboard-rank rank-${i + 1}`}>{i + 1}</div>
+                          ) : (
+                            <span style={{ fontFamily: 'var(--font-mono)', color: 'var(--text-muted)', paddingLeft: 8 }}>{i + 1}</span>
+                          )}
+                        </td>
+                        <td style={{ fontWeight: 600 }}>{entry.username}</td>
+                        <td style={{ textAlign: 'right' }} className="mono">{Number(entry.balance).toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
+                        <td style={{ textAlign: 'right', color: 'var(--accent-violet)' }} className="mono">{Number(entry.portfolio_value).toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
+                        <td style={{ textAlign: 'right', color: 'var(--accent-amber)', fontWeight: 700 }} className="mono">{Number(entry.net_worth).toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Recent Transactions */}

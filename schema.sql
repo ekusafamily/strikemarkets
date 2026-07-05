@@ -77,6 +77,15 @@ INSERT INTO system_stats (key, value) VALUES
   ('total_house_profit', 0)
 ON CONFLICT (key) DO NOTHING;
 
+-- Price history for probability charts
+CREATE TABLE IF NOT EXISTS price_history (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  market_id UUID NOT NULL REFERENCES markets(id) ON DELETE CASCADE,
+  option_id UUID NOT NULL REFERENCES market_options(id) ON DELETE CASCADE,
+  fair_price NUMERIC(10, 6) NOT NULL,
+  recorded_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
 -- Indexes (IF NOT EXISTS supported via DO block)
 CREATE INDEX IF NOT EXISTS idx_market_options_market ON market_options(market_id);
 CREATE INDEX IF NOT EXISTS idx_positions_user ON positions(user_id);
@@ -85,3 +94,4 @@ CREATE INDEX IF NOT EXISTS idx_transactions_user ON transactions(user_id);
 CREATE INDEX IF NOT EXISTS idx_transactions_market ON transactions(market_id);
 CREATE INDEX IF NOT EXISTS idx_transactions_created ON transactions(created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_markets_status ON markets(status);
+CREATE INDEX IF NOT EXISTS idx_price_history_market ON price_history(market_id, recorded_at);

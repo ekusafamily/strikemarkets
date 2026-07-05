@@ -41,6 +41,12 @@ export async function POST(request) {
       await client.query(`UPDATE system_stats SET value = value + $1 WHERE key = 'total_resolution_rake'`, [resolution.houseRake]);
       await client.query(`UPDATE system_stats SET value = value + $1 WHERE key = 'total_house_profit'`, [resolution.houseRake]);
 
+      // Refund the 100 VC seed liquidity to the market creator
+      const creatorId = marketRes.rows[0].created_by;
+      if (creatorId) {
+        await client.query('UPDATE users SET balance = balance + 100 WHERE id = $1', [creatorId]);
+      }
+
       await client.query('COMMIT');
       return NextResponse.json({ success: true, resolution: { totalPool: resolution.totalPool, houseRake: resolution.houseRake, payoutPool: resolution.payoutPool, payoutPerShare: resolution.payoutPerShare, winnersCount: resolution.payouts.length } });
     } catch (e) { await client.query('ROLLBACK'); throw e; } finally { client.release(); }

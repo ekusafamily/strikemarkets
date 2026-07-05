@@ -7,11 +7,11 @@
  * House edges:
  *   - Buy price = fair * 1.20 (capped at 0.95)
  *   - Sell price = fair * 0.80
- *   - 2% transaction fee on all trades
+ *   - 10% transaction fee on all trades
  *   - 20% resolution rake on winning payouts
  */
 
-const FEE_RATE = 0.02;       // 2% transaction fee
+const FEE_RATE = 0.10;       // 10% transaction fee
 const BUY_MARKUP = 1.20;     // 20% overround on buys
 const SELL_MARKDOWN = 0.80;  // 20% markdown on sells
 const RESOLUTION_RAKE = 0.20; // 20% house rake on resolution
@@ -57,7 +57,7 @@ export function getPrices(options) {
  * User spends `coins` to buy shares of `targetOptionId`
  * 
  * Process:
- * 1. Deduct 2% fee from coins
+ * 1. Deduct 10% fee from coins
  * 2. Calculate shares at the buy price
  * 3. Add coins to the target option's pool (increases its probability)
  * 4. Compute spread profit (difference between what they pay and fair value)
