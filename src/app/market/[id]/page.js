@@ -17,7 +17,7 @@ function Toast({ message, type, onClose }) {
 
 const CHART_COLORS = ['#f59e0b', '#8b5cf6', '#10b981', '#ef4444', '#3b82f6', '#ec4899', '#06b6d4', '#84cc16'];
 
-function ProbabilityChart({ priceHistory, options }) {
+function ProbabilityChart({ priceHistory, options, marketStatus }) {
   if (!priceHistory || priceHistory.length === 0 || !options || options.length === 0) {
     return (
       <div style={{ padding: '32px 24px', textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.85rem' }}>
@@ -29,6 +29,8 @@ function ProbabilityChart({ priceHistory, options }) {
   const W = 600, H = 200, PAD_L = 45, PAD_R = 16, PAD_T = 16, PAD_B = 28;
   const plotW = W - PAD_L - PAD_R;
   const plotH = H - PAD_T - PAD_B;
+
+  const now = Date.now();
 
   // Group data by option
   const seriesMap = {};
@@ -44,7 +46,25 @@ function ProbabilityChart({ priceHistory, options }) {
     }
   }
 
-  const allTimes = priceHistory.map(r => new Date(r.recorded_at).getTime());
+  // Extend lines to current time if market is open
+  if (marketStatus === 'open') {
+    for (const opt of options) {
+      const pts = seriesMap[opt.id].points;
+      if (pts.length > 0) {
+        pts.push({
+          t: now,
+          v: pts[pts.length - 1].v,
+        });
+      }
+    }
+  }
+
+  const allTimes = [];
+  for (const opt of options) {
+    for(const p of seriesMap[opt.id].points) allTimes.push(p.t);
+  }
+  if (allTimes.length === 0) return null;
+
   const minT = Math.min(...allTimes);
   const maxT = Math.max(...allTimes);
   const timeRange = maxT - minT || 1;
@@ -92,16 +112,24 @@ function ProbabilityChart({ priceHistory, options }) {
           return (
             <g key={opt.id}>
               <path d={d} fill="none" stroke={CHART_COLORS[i % CHART_COLORS.length]} strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" />
-              {/* End dot */}
+              {/* End dot with ping effect if open */}
               {series.points.length > 0 && (
-                <circle
-                  cx={toX(series.points[series.points.length - 1].t)}
-                  cy={toY(series.points[series.points.length - 1].v)}
-                  r="3.5"
-                  fill={CHART_COLORS[i % CHART_COLORS.length]}
-                  stroke="var(--bg-primary)"
-                  strokeWidth="1.5"
-                />
+                <g>
+                  {marketStatus === 'open' && (
+                    <circle cx={toX(series.points[series.points.length - 1].t)} cy={toY(series.points[series.points.length - 1].v)} r="3.5" fill={CHART_COLORS[i % CHART_COLORS.length]}>
+                      <animate attributeName="r" begin="0s" dur="2s" values="3.5; 15; 15" keyTimes="0; 0.5; 1" repeatCount="indefinite" />
+                      <animate attributeName="opacity" begin="0s" dur="2s" values="0.6; 0; 0" keyTimes="0; 0.5; 1" repeatCount="indefinite" />
+                    </circle>
+                  )}
+                  <circle
+                    cx={toX(series.points[series.points.length - 1].t)}
+                    cy={toY(series.points[series.points.length - 1].v)}
+                    r="3.5"
+                    fill={CHART_COLORS[i % CHART_COLORS.length]}
+                    stroke="var(--bg-primary)"
+                    strokeWidth="1.5"
+                  />
+                </g>
               )}
             </g>
           );
@@ -265,7 +293,7 @@ export default function MarketPage() {
             {/* Probability Chart */}
             <div className="card" style={{ marginBottom: 20 }}>
               <h3 style={{ fontFamily: 'var(--font-mono)', fontSize: '0.9rem', marginBottom: 12, color: 'var(--text-secondary)' }}>PROBABILITY OVER TIME</h3>
-              <ProbabilityChart priceHistory={priceHistory} options={market.options} />
+              <ProbabilityChart priceHistory={priceHistory} options={market.options} marketStatus={market.status} />
             </div>
 
             <div className="card" style={{ marginBottom: 20 }}>
