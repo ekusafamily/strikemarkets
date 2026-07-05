@@ -372,7 +372,7 @@ export default function AdminPage() {
               <tbody>
                 {transactions.map(tx => (
                   <tr key={tx.id}>
-                    <td style={{ fontSize: '0.75rem', whiteSpace: 'nowrap' }}>{new Date(tx.created_at).toLocaleString()}</td>
+                    <td style={{ fontSize: '0.75rem', whiteSpace: 'nowrap' }}>{new Date(tx.created_at).toLocaleString([], { timeZone: 'Africa/Nairobi' })}</td>
                     <td>{tx.username}</td>
                     <td>
                       <span style={{

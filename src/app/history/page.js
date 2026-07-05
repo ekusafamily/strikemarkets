@@ -195,7 +195,7 @@ export default function HistoryPage() {
                         return (
                           <tr key={tx.id}>
                             <td style={{ fontSize: '0.75rem', whiteSpace: 'nowrap', color: 'var(--text-muted)' }}>
-                              {new Date(tx.created_at).toLocaleDateString()} {new Date(tx.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                              {new Date(tx.created_at).toLocaleDateString([], { timeZone: 'Africa/Nairobi' })} {new Date(tx.created_at).toLocaleTimeString([], { timeZone: 'Africa/Nairobi', hour: '2-digit', minute: '2-digit' })}
                             </td>
                             <td>
                               <span style={{

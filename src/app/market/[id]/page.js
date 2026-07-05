@@ -86,9 +86,10 @@ function ProbabilityChart({ priceHistory, options, marketStatus }) {
   const formatTime = (t) => {
     const d = new Date(t);
     const rangeHours = timeRange / (1000 * 60 * 60);
-    if (rangeHours < 24) return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }); // Hours:Mins
-    if (rangeHours < 24 * 30) return d.toLocaleDateString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }); // Month Day, HH:MM
-    return d.toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' }); // Month Day, Year
+    const tz = { timeZone: 'Africa/Nairobi' };
+    if (rangeHours < 24) return d.toLocaleTimeString([], { ...tz, hour: '2-digit', minute: '2-digit' }); // Hours:Mins
+    if (rangeHours < 24 * 30) return d.toLocaleDateString([], { ...tz, month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }); // Month Day, HH:MM
+    return d.toLocaleDateString([], { ...tz, month: 'short', day: 'numeric', year: 'numeric' }); // Month Day, Year
   };
 
   return (
@@ -351,7 +352,7 @@ export default function MarketPage() {
                       <tr key={tx.id}>
                         <td>{tx.option_name}</td>
                         <td className="mono" style={{ fontWeight: 600 }}>{Number(tx.amount_coins).toFixed(2)} VC</td>
-                        <td style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{new Date(tx.created_at).toLocaleTimeString()}</td>
+                        <td style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{new Date(tx.created_at).toLocaleTimeString([], { timeZone: 'Africa/Nairobi' })}</td>
                       </tr>
                     ))}
                   </tbody>
