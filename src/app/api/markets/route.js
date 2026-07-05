@@ -90,8 +90,8 @@ export async function POST(request) {
     if (!options || options.length < 2) {
       return NextResponse.json({ error: 'Need at least 2 options' }, { status: 400 });
     }
-    if (options.length > 10) {
-      return NextResponse.json({ error: 'Maximum 10 options' }, { status: 400 });
+    if (options.length > 40) {
+      return NextResponse.json({ error: 'Maximum 40 options' }, { status: 400 });
     }
 
     const client = await pool.connect();

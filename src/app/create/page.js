@@ -25,7 +25,7 @@ export default function CreatePage() {
     fetch('/api/auth').then(r => r.json()).then(d => { if (!d.user) router.push('/'); else setUser(d.user); });
   }, [router]);
 
-  const addOption = () => { if (options.length < 10) setOptions([...options, '']); };
+  const addOption = () => { if (options.length < 40) setOptions([...options, '']); };
   const removeOption = (i) => { if (options.length > 2) setOptions(options.filter((_, idx) => idx !== i)); };
   const updateOption = (i, v) => { const n = [...options]; n[i] = v; setOptions(n); };
 
@@ -98,7 +98,7 @@ export default function CreatePage() {
           </div>
 
           <div className="card" style={{ marginBottom: 20 }}>
-            <h3 style={{ fontFamily: 'var(--font-mono)', fontSize: '0.9rem', marginBottom: 16, color: 'var(--text-secondary)' }}>OPTIONS ({options.length}/10)</h3>
+            <h3 style={{ fontFamily: 'var(--font-mono)', fontSize: '0.9rem', marginBottom: 16, color: 'var(--text-secondary)' }}>OPTIONS ({options.length}/40)</h3>
             {options.map((opt, i) => (
               <div key={i} style={{ display: 'flex', gap: 8, marginBottom: 10 }}>
                 <input
@@ -112,7 +112,7 @@ export default function CreatePage() {
                 )}
               </div>
             ))}
-            {options.length < 10 && (
+            {options.length < 40 && (
               <button type="button" className="btn btn-ghost btn-sm" onClick={addOption}>+ Add Option</button>
             )}
           </div>
