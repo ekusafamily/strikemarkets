@@ -22,10 +22,15 @@ export async function POST(request) {
 
       const cleanEmail = email.trim().toLowerCase();
 
+      const origin = new URL(request.url).origin;
+
       // Sign up via Supabase Auth
       const { data, error } = await supabase.auth.signUp({
         email: cleanEmail,
         password: password,
+        options: {
+          emailRedirectTo: `${origin}/api/auth/callback`,
+        },
       });
 
       if (error) {
