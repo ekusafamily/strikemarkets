@@ -25,6 +25,7 @@
 *.pem
 create-user.js
 update-db.js
+fix-user.js
 
 # debug
 npm-debug.log*
