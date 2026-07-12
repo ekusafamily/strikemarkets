@@ -5,6 +5,9 @@ import pool from '@/lib/db';
 export async function POST(request) {
   try {
     const rawPayload = await request.text();
+    const signature = request.headers.get('x-paynexus-signature') || '';
+    const secret = process.env.PAYNEXUS_WEBHOOK_SECRET;
+
     // Log everything for debugging the first real payment
     console.log('=== PAYNEXUS WEBHOOK RECEIVED ===');
     console.log('Signature header:', signature);
