@@ -1,20 +1,18 @@
 import { NextResponse } from 'next/server';
-import { cookies } from 'next/headers';
+import { createClient } from '@/lib/supabase-server';
 import pool from '@/lib/db';
-import bcrypt from 'bcryptjs';
 
 // POST /api/auth - Login or Register
 export async function POST(request) {
   try {
     const body = await request.json();
     const { action } = body; // 'register' | 'login'
+    
+    const supabase = await createClient();
 
     if (action === 'register') {
-      const { username, email, password } = body;
+      const { email, password } = body;
 
-      if (!username || username.trim().length < 2) {
-        return NextResponse.json({ error: 'Username must be at least 2 characters' }, { status: 400 });
-      }
       if (!email || !email.includes('@')) {
         return NextResponse.json({ error: 'Valid email is required' }, { status: 400 });
       }
@@ -22,79 +20,60 @@ export async function POST(request) {
         return NextResponse.json({ error: 'Password must be at least 6 characters' }, { status: 400 });
       }
 
-      const cleanUsername = username.trim().toLowerCase();
       const cleanEmail = email.trim().toLowerCase();
 
-      // Check username or email already taken
-      const existRes = await pool.query(
-        'SELECT id FROM users WHERE username = $1 OR email = $2',
-        [cleanUsername, cleanEmail]
-      );
-      if (existRes.rows.length > 0) {
-        return NextResponse.json({ error: 'Username or email already taken' }, { status: 409 });
+      // Sign up via Supabase Auth
+      const { data, error } = await supabase.auth.signUp({
+        email: cleanEmail,
+        password: password,
+      });
+
+      if (error) {
+        return NextResponse.json({ error: error.message }, { status: 400 });
       }
 
-      const password_hash = await bcrypt.hash(password, 10);
-
-      // First user becomes admin
-      const countRes = await pool.query('SELECT COUNT(*) FROM users');
-      const isFirst = parseInt(countRes.rows[0].count) === 0;
-
-      const res = await pool.query(
-        'INSERT INTO users (username, email, password_hash, balance, is_admin) VALUES ($1, $2, $3, $4, $5) RETURNING *',
-        [cleanUsername, cleanEmail, password_hash, 1000.00, isFirst]
-      );
-      const user = res.rows[0];
-
-      const cookieStore = await cookies();
-      cookieStore.set('user_id', user.id, { httpOnly: true, secure: false, sameSite: 'lax', maxAge: 60 * 60 * 24 * 30, path: '/' });
+      // Check if email confirmation is required
+      if (data?.user && data?.user?.identities && data?.user?.identities.length === 0) {
+          return NextResponse.json({ error: 'Email already registered. Try logging in.' }, { status: 400 });
+      }
 
       return NextResponse.json({
-        id: user.id,
-        username: user.username,
-        email: user.email,
-        balance: Number(user.balance),
-        is_admin: user.is_admin,
+        message: 'Registration successful! Please check your email to verify your account.',
+        requiresEmailVerification: true
       });
 
     } else if (action === 'login') {
-      const { identifier, password } = body; // identifier = username or email
+      const { identifier, password } = body; // identifier = email
 
       if (!identifier || !password) {
-        return NextResponse.json({ error: 'Username/email and password required' }, { status: 400 });
+        return NextResponse.json({ error: 'Email and password required' }, { status: 400 });
       }
 
       const clean = identifier.trim().toLowerCase();
-      const res = await pool.query(
-        'SELECT * FROM users WHERE username = $1 OR email = $1',
-        [clean]
-      );
-
-      if (res.rows.length === 0) {
-        return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
-      }
-
-      const user = res.rows[0];
-
-      // Support legacy accounts without passwords (username-only login)
-      if (!user.password_hash) {
-        // Legacy: allow login without password
-      } else {
-        const valid = await bcrypt.compare(password, user.password_hash);
-        if (!valid) {
-          return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
+      
+      let emailToLogin = clean;
+      if (!clean.includes('@')) {
+        // Find email by username
+        const uRes = await pool.query('SELECT email FROM users WHERE username = $1', [clean]);
+        if (uRes.rows.length > 0) {
+          emailToLogin = uRes.rows[0].email;
+        } else {
+          return NextResponse.json({ error: 'Username not found' }, { status: 404 });
         }
       }
+      
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: emailToLogin,
+        password: password,
+      });
 
-      const cookieStore = await cookies();
-      cookieStore.set('user_id', user.id, { httpOnly: true, secure: false, sameSite: 'lax', maxAge: 60 * 60 * 24 * 30, path: '/' });
+      if (error) {
+        return NextResponse.json({ error: error.message }, { status: 401 });
+      }
 
+      // After successful login, Supabase SSR automatically sets the cookies
       return NextResponse.json({
-        id: user.id,
-        username: user.username,
-        email: user.email,
-        balance: Number(user.balance),
-        is_admin: user.is_admin,
+        success: true
       });
 
     } else {
@@ -110,11 +89,17 @@ export async function POST(request) {
 // GET /api/auth - Get current user
 export async function GET() {
   try {
-    const cookieStore = await cookies();
-    const userId = cookieStore.get('user_id')?.value;
-    if (!userId) return NextResponse.json({ user: null });
+    const supabase = await createClient();
+    
+    // Get session
+    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+    
+    if (!session || sessionError) {
+      return NextResponse.json({ user: null });
+    }
 
-    const res = await pool.query('SELECT * FROM users WHERE id = $1', [userId]);
+    // Get user from our public table
+    const res = await pool.query('SELECT * FROM users WHERE id = $1', [session.user.id]);
     if (res.rows.length === 0) return NextResponse.json({ user: null });
 
     const user = res.rows[0];
@@ -135,7 +120,7 @@ export async function GET() {
 
 // DELETE /api/auth - Logout
 export async function DELETE() {
-  const cookieStore = await cookies();
-  cookieStore.delete('user_id');
+  const supabase = await createClient();
+  await supabase.auth.signOut();
   return NextResponse.json({ ok: true });
 }

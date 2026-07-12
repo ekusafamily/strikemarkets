@@ -29,17 +29,16 @@ function EyeIcon({ open }) {
 // Navbar is now shared from @/components/Navbar
 
 function AuthModal({ onClose, onSuccess }) {
-  const [tab, setTab] = useState('login'); // 'login' | 'register'
+  const [tab, setTab] = useState('register'); // 'login' | 'register'
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [successMsg, setSuccessMsg] = useState('');
   const [showPwd, setShowPwd] = useState(false);
 
   // Login fields
   const [identifier, setIdentifier] = useState('');
   const [loginPwd, setLoginPwd] = useState('');
 
-  // Register fields
-  const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPwd, setConfirmPwd] = useState('');
@@ -69,7 +68,7 @@ function AuthModal({ onClose, onSuccess }) {
 
   const handleRegister = async (e) => {
     e.preventDefault();
-    if (!username.trim() || !email.trim() || !password || !confirmPwd) { setError('Please fill in all fields'); return; }
+    if (!email.trim() || !password || !confirmPwd) { setError('Please fill in all fields'); return; }
     if (password !== confirmPwd) { setError('Passwords do not match'); return; }
     if (password.length < 6) { setError('Password must be at least 6 characters'); return; }
     setError('');
@@ -78,11 +77,15 @@ function AuthModal({ onClose, onSuccess }) {
       const res = await fetch('/api/auth', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'register', username, email, password }),
+        body: JSON.stringify({ action: 'register', email, password }),
       });
       const data = await res.json();
       if (res.ok) {
-        onSuccess(data, `Welcome, ${data.username}! You have 1,000 VCoins 🎉`);
+        if (data.requiresEmailVerification) {
+          setSuccessMsg(data.message);
+        } else {
+          onSuccess(data, `Welcome! Your account is ready.`);
+        }
       } else {
         setError(data.error || 'Registration failed');
       }
@@ -110,15 +113,27 @@ function AuthModal({ onClose, onSuccess }) {
         </div>
 
         {/* Tabs */}
-        <div className="auth-tabs">
-          <button className={`auth-tab ${tab === 'login' ? 'active' : ''}`} onClick={() => { setTab('login'); setError(''); }}>Sign In</button>
-          <button className={`auth-tab ${tab === 'register' ? 'active' : ''}`} onClick={() => { setTab('register'); setError(''); }}>Create Account</button>
-        </div>
+        {!successMsg && (
+          <div className="auth-tabs">
+            <button className={`auth-tab ${tab === 'register' ? 'active' : ''}`} onClick={() => { setTab('register'); setError(''); }}>Create Account</button>
+            <button className={`auth-tab ${tab === 'login' ? 'active' : ''}`} onClick={() => { setTab('login'); setError(''); }}>Sign In</button>
+          </div>
+        )}
 
-        {/* Error */}
+        {/* Error / Success */}
         {error && <div className="auth-error">{error}</div>}
+        {successMsg && (
+          <div style={{ padding: 24, textAlign: 'center' }}>
+            <div style={{ fontSize: '2rem', marginBottom: 16 }}>✉️</div>
+            <h3 style={{ color: 'var(--text-primary)', marginBottom: 8 }}>Check your email</h3>
+            <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', lineHeight: 1.5 }}>
+              {successMsg}
+            </p>
+            <button className="btn btn-ghost" style={{ marginTop: 24 }} onClick={onClose}>Close</button>
+          </div>
+        )}
 
-        {tab === 'login' ? (
+        {!successMsg && tab === 'login' ? (
           <form onSubmit={handleLogin} className="auth-form">
             <div className="form-group">
               <label className="form-label">Username or Email</label>
@@ -154,19 +169,8 @@ function AuthModal({ onClose, onSuccess }) {
               <button type="button" onClick={() => { setTab('register'); setError(''); }}>Create one</button>
             </div>
           </form>
-        ) : (
+        ) : !successMsg && tab === 'register' ? (
           <form onSubmit={handleRegister} className="auth-form">
-            <div className="form-group">
-              <label className="form-label">Username</label>
-              <input
-                className="form-input"
-                type="text"
-                placeholder="Choose a username..."
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                autoFocus
-              />
-            </div>
             <div className="form-group">
               <label className="form-label">Email</label>
               <input
@@ -175,6 +179,7 @@ function AuthModal({ onClose, onSuccess }) {
                 placeholder="your@email.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                autoFocus
               />
             </div>
             <div className="form-group">
@@ -202,19 +207,19 @@ function AuthModal({ onClose, onSuccess }) {
                 onChange={(e) => setConfirmPwd(e.target.value)}
               />
             </div>
-            <div className="auth-bonus-notice">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ marginRight: 6, verticalAlign: 'middle' }}><path d="M20 12v10H4V12"/><path d="M22 7H2v5h20V7z"/><path d="M12 22V7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg>
-              Get <strong>1,000 VCoins</strong> free on registration!
+            <div className="auth-bonus-notice" style={{ background: 'var(--bg-input)', borderColor: 'var(--border-color)', color: 'var(--text-secondary)' }}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ marginRight: 6, verticalAlign: 'middle' }}><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+              <strong>Valid email required.</strong> You must verify your email before logging in.
             </div>
             <button className="btn btn-amber btn-lg" style={{ width: '100%', marginTop: 8 }} disabled={loading}>
-              {loading ? 'Creating account...' : 'Create Account & Get 1,000 VC'}
+              {loading ? 'Creating account...' : 'Create Account'}
             </button>
             <div className="auth-switch">
               Already have an account?{' '}
               <button type="button" onClick={() => { setTab('login'); setError(''); }}>Sign in</button>
             </div>
           </form>
-        )}
+        ) : null}
       </div>
     </div>
   );

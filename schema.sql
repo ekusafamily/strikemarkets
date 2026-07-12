@@ -1,17 +1,43 @@
 -- Strike Markets Schema (Idempotent — safe to re-run on every deploy)
 -- Uses IF NOT EXISTS so existing data is never dropped
 
--- Users table
+-- Users table (Synced with Supabase Auth)
 CREATE TABLE IF NOT EXISTS users (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  id UUID PRIMARY KEY, -- matches auth.users.id
   username TEXT UNIQUE NOT NULL,
   email TEXT UNIQUE,
-  password_hash TEXT,
-  balance NUMERIC(14, 2) NOT NULL DEFAULT 1000.00,
+  balance NUMERIC(14, 2) NOT NULL DEFAULT 0.00,
   is_admin BOOLEAN NOT NULL DEFAULT FALSE,
   last_claim TIMESTAMPTZ,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+
+-- Function to handle new user signups from Supabase Auth
+CREATE OR REPLACE FUNCTION public.handle_new_user() 
+RETURNS TRIGGER AS $$
+DECLARE
+  first_user BOOLEAN;
+BEGIN
+  -- Check if this is the first user
+  SELECT COUNT(*) = 0 INTO first_user FROM public.users;
+  
+  INSERT INTO public.users (id, email, username, is_admin)
+  VALUES (
+    NEW.id,
+    NEW.email,
+    COALESCE(NEW.raw_user_meta_data->>'username', split_part(NEW.email, '@', 1)),
+    first_user
+  );
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Trigger for new user signup
+DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
+CREATE TRIGGER on_auth_user_created
+  AFTER INSERT ON auth.users
+  FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
+
 
 -- Markets table
 CREATE TABLE IF NOT EXISTS markets (
