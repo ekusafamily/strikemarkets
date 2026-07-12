@@ -21,10 +21,6 @@ async function initDB() {
       console.log(`Connected via ${region}!`);
 
       const schema = fs.readFileSync(path.join(__dirname, 'schema.sql'), 'utf8');
-      
-      // Wipe everything for fresh start with Supabase Auth
-      console.log('Wiping database for Supabase Auth migration...');
-      await client.query('DROP SCHEMA public CASCADE; CREATE SCHEMA public;');
 
       await client.query(schema);
       console.log('Schema created successfully');
