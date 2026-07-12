@@ -6,11 +6,14 @@ import { calculateBuy, calculateSell, getFairPrices } from '@/lib/parimutuel';
 // POST /api/trade - Execute a buy or sell trade
 export async function POST(request) {
   try {
-    const cookieStore = await cookies();
-    const userId = cookieStore.get('user_id')?.value;
-    if (!userId) {
+    const { createClient } = require('@/lib/supabase-server');
+    const supabase = await createClient();
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+
+    if (authError || !user) {
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
     }
+    const userId = user.id;
 
     const { market_id, option_id, action, amount } = await request.json();
     // action: 'buy' or 'sell'

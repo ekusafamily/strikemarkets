@@ -6,10 +6,15 @@ import { getPrices } from '@/lib/parimutuel';
 // GET /api/history - Get logged-in user's trade history, positions, and stats
 export async function GET() {
   try {
-    const cookieStore = await cookies();
-    const userId = cookieStore.get('user_id')?.value;
-    if (!userId) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
+    const { createClient } = require('@/lib/supabase-server');
+    const supabase = await createClient();
+    const { data: { user: authUser }, error: authError } = await supabase.auth.getUser();
 
+    if (authError || !authUser) {
+      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
+    }
+
+    const userId = authUser.id;
     // User info
     const userRes = await pool.query('SELECT id, username, balance, created_at FROM users WHERE id = $1', [userId]);
     if (userRes.rows.length === 0) return NextResponse.json({ error: 'User not found' }, { status: 404 });

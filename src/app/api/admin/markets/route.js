@@ -6,11 +6,14 @@ import { getPrices } from '@/lib/parimutuel';
 // GET /api/admin/markets - All markets (all statuses) for admin view
 export async function GET(request) {
   try {
-    const cookieStore = await cookies();
-    const userId = cookieStore.get('user_id')?.value;
-    if (!userId) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
+    const { createClient } = require('@/lib/supabase-server');
+    const supabase = await createClient();
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
 
-    const adminRes = await pool.query('SELECT is_admin FROM users WHERE id = $1', [userId]);
+    if (authError || !user) {
+      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
+    }
+    const userId = user.id; const adminRes = await pool.query('SELECT is_admin FROM users WHERE id = $1', [userId]);
     if (!adminRes.rows[0]?.is_admin) return NextResponse.json({ error: 'Admin only' }, { status: 403 });
 
     const { searchParams } = new URL(request.url);

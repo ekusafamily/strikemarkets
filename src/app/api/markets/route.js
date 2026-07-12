@@ -73,14 +73,17 @@ export async function GET(request) {
   }
 }
 
-// POST /api/markets - Create a new market (costs 100 VC as opening liquidity)
+// POST /api/markets - Create a new market (costs 100 KES as opening liquidity)
 export async function POST(request) {
   try {
-    const cookieStore = await cookies();
-    const userId = cookieStore.get('user_id')?.value;
-    if (!userId) {
+    const { createClient } = require('@/lib/supabase-server');
+    const supabase = await createClient();
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+
+    if (authError || !user) {
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
     }
+    const userId = user.id;
 
     const { question, description, category, end_date, options } = await request.json();
 

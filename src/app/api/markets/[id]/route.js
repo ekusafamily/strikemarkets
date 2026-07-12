@@ -7,8 +7,10 @@ import { getPrices } from '@/lib/parimutuel';
 export async function GET(request, { params }) {
   try {
     const { id } = await params;
-    const cookieStore = await cookies();
-    const userId = cookieStore.get('user_id')?.value;
+    const { createClient } = require('@/lib/supabase-server');
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    const userId = user?.id;
 
     const marketRes = await pool.query(
       `SELECT m.*, u.username as creator_name 
