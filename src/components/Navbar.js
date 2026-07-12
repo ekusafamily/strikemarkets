@@ -28,7 +28,7 @@ function CoinIcon() {
   );
 }
 
-export default function Navbar({ user, onLogin, onLogout, activePage = '' }) {
+export default function Navbar({ user, onLogin, onLogout, onOpenWallet, activePage = '' }) {
   const router = useRouter();
 
   const navLink = (href, label) => (
@@ -61,7 +61,12 @@ export default function Navbar({ user, onLogin, onLogout, activePage = '' }) {
         <div className="navbar-user">
           {user ? (
             <>
-              <div className="wallet-badge">
+              <div 
+                className="wallet-badge" 
+                style={onOpenWallet ? { cursor: 'pointer' } : {}}
+                onClick={onOpenWallet ? onOpenWallet : undefined}
+                title="Deposit Funds"
+              >
                 <CoinIcon />
                 {Number(user.balance).toLocaleString('en-US', { minimumFractionDigits: 2 })}
               </div>

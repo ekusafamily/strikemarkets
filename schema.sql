@@ -79,13 +79,27 @@ CREATE TABLE IF NOT EXISTS transactions (
   user_id UUID NOT NULL REFERENCES users(id),
   market_id UUID REFERENCES markets(id),
   option_id UUID REFERENCES market_options(id),
-  type TEXT NOT NULL CHECK (type IN ('buy', 'sell', 'redeem', 'claim_daily', 'resolution_payout')),
+  type TEXT NOT NULL CHECK (type IN ('buy', 'sell', 'redeem', 'claim_daily', 'resolution_payout', 'deposit', 'withdrawal')),
   amount_coins NUMERIC(14, 4) NOT NULL DEFAULT 0,
   amount_shares NUMERIC(14, 4) NOT NULL DEFAULT 0,
   price_per_share NUMERIC(14, 6) NOT NULL DEFAULT 0,
   fee_coins NUMERIC(14, 4) NOT NULL DEFAULT 0,
   house_profit NUMERIC(14, 4) NOT NULL DEFAULT 0,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- M-Pesa Deposits
+CREATE TABLE IF NOT EXISTS mpesa_deposits (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL REFERENCES users(id),
+  amount NUMERIC(14, 2) NOT NULL,
+  phone_number TEXT NOT NULL,
+  reference TEXT UNIQUE,
+  checkout_request_id TEXT UNIQUE,
+  status TEXT NOT NULL DEFAULT 'initiated',
+  failure_reason TEXT,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 -- System stats (key-value store for house tracking)

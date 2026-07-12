@@ -63,7 +63,13 @@ export async function POST(request) {
         if (uRes.rows.length > 0) {
           emailToLogin = uRes.rows[0].email;
         } else {
-          return NextResponse.json({ error: 'Username not found' }, { status: 404 });
+          return NextResponse.json({ error: 'User not found', needsRegistration: true }, { status: 404 });
+        }
+      } else {
+        // It's an email. Check if it exists.
+        const eRes = await pool.query('SELECT id FROM users WHERE email = $1', [clean]);
+        if (eRes.rows.length === 0) {
+          return NextResponse.json({ error: 'User not found', needsRegistration: true }, { status: 404 });
         }
       }
       

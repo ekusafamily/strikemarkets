@@ -2,6 +2,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Navbar from '@/components/Navbar';
+import WalletModal from '@/components/WalletModal';
 
 const CATEGORIES = ['All', 'Crypto', 'Politics', 'Tech', 'Sports', 'Entertainment', 'General'];
 
@@ -29,70 +30,68 @@ function EyeIcon({ open }) {
 // Navbar is now shared from @/components/Navbar
 
 function AuthModal({ onClose, onSuccess }) {
-  const [tab, setTab] = useState('register'); // 'login' | 'register'
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
   const [showPwd, setShowPwd] = useState(false);
 
-  // Login fields
-  const [identifier, setIdentifier] = useState('');
-  const [loginPwd, setLoginPwd] = useState('');
-
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPwd, setConfirmPwd] = useState('');
+  const [isRegistering, setIsRegistering] = useState(false);
 
-  const handleLogin = async (e) => {
+  const handleContinue = async (e) => {
     e.preventDefault();
-    if (!identifier.trim() || !loginPwd) { setError('Please fill in all fields'); return; }
-    setError('');
-    setLoading(true);
-    try {
-      const res = await fetch('/api/auth', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'login', identifier, password: loginPwd }),
-      });
-      const data = await res.json();
-      if (res.ok) {
-        onSuccess(data, `Welcome back, ${data.username}!`);
-      } else {
-        setError(data.error || 'Login failed');
-      }
-    } catch {
-      setError('Connection error. Try again.');
-    }
-    setLoading(false);
-  };
-
-  const handleRegister = async (e) => {
-    e.preventDefault();
-    if (!email.trim() || !password || !confirmPwd) { setError('Please fill in all fields'); return; }
-    if (password !== confirmPwd) { setError('Passwords do not match'); return; }
-    if (password.length < 6) { setError('Password must be at least 6 characters'); return; }
-    setError('');
-    setLoading(true);
-    try {
-      const res = await fetch('/api/auth', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'register', email, password }),
-      });
-      const data = await res.json();
-      if (res.ok) {
-        if (data.requiresEmailVerification) {
-          setSuccessMsg(data.message);
+    if (!email.trim() || !password) { setError('Please fill in all fields'); return; }
+    
+    if (isRegistering) {
+      if (password !== confirmPwd) { setError('Passwords do not match'); return; }
+      if (password.length < 6) { setError('Password must be at least 6 characters'); return; }
+      setError('');
+      setLoading(true);
+      try {
+        const res = await fetch('/api/auth', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'register', email, password }),
+        });
+        const data = await res.json();
+        if (res.ok) {
+          if (data.requiresEmailVerification) {
+            setSuccessMsg(data.message);
+          } else {
+            onSuccess(data, `Welcome! Your account is ready.`);
+          }
         } else {
-          onSuccess(data, `Welcome! Your account is ready.`);
+          setError(data.error || 'Registration failed');
         }
-      } else {
-        setError(data.error || 'Registration failed');
+      } catch {
+        setError('Connection error. Try again.');
       }
-    } catch {
-      setError('Connection error. Try again.');
+      setLoading(false);
+    } else {
+      setError('');
+      setLoading(true);
+      try {
+        const res = await fetch('/api/auth', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'login', identifier: email, password }),
+        });
+        const data = await res.json();
+        if (res.ok) {
+          onSuccess(data, `Welcome back!`);
+        } else if (data.needsRegistration) {
+          setIsRegistering(true);
+          setError('Email not found. Please confirm your password to create an account.');
+        } else {
+          setError(data.error || 'Login failed');
+        }
+      } catch {
+        setError('Connection error. Try again.');
+      }
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   return (
@@ -112,14 +111,6 @@ function AuthModal({ onClose, onSuccess }) {
         </div>
         </div>
 
-        {/* Tabs */}
-        {!successMsg && (
-          <div className="auth-tabs">
-            <button className={`auth-tab ${tab === 'register' ? 'active' : ''}`} onClick={() => { setTab('register'); setError(''); }}>Create Account</button>
-            <button className={`auth-tab ${tab === 'login' ? 'active' : ''}`} onClick={() => { setTab('login'); setError(''); }}>Sign In</button>
-          </div>
-        )}
-
         {/* Error / Success */}
         {error && <div className="auth-error">{error}</div>}
         {successMsg && (
@@ -133,44 +124,8 @@ function AuthModal({ onClose, onSuccess }) {
           </div>
         )}
 
-        {!successMsg && tab === 'login' ? (
-          <form onSubmit={handleLogin} className="auth-form">
-            <div className="form-group">
-              <label className="form-label">Username or Email</label>
-              <input
-                className="form-input"
-                type="text"
-                placeholder="Enter username or email..."
-                value={identifier}
-                onChange={(e) => setIdentifier(e.target.value)}
-                autoFocus
-              />
-            </div>
-            <div className="form-group">
-              <label className="form-label">Password</label>
-              <div className="input-with-icon">
-                <input
-                  className="form-input"
-                  type={showPwd ? 'text' : 'password'}
-                  placeholder="Enter password..."
-                  value={loginPwd}
-                  onChange={(e) => setLoginPwd(e.target.value)}
-                />
-                <button type="button" className="input-eye-btn" onClick={() => setShowPwd(!showPwd)}>
-                  <EyeIcon open={showPwd} />
-                </button>
-              </div>
-            </div>
-            <button className="btn btn-amber btn-lg" style={{ width: '100%', marginTop: 8 }} disabled={loading}>
-              {loading ? 'Signing in...' : 'Sign In'}
-            </button>
-            <div className="auth-switch">
-              Don&apos;t have an account?{' '}
-              <button type="button" onClick={() => { setTab('register'); setError(''); }}>Create one</button>
-            </div>
-          </form>
-        ) : !successMsg && tab === 'register' ? (
-          <form onSubmit={handleRegister} className="auth-form">
+        {!successMsg && (
+          <form onSubmit={handleContinue} className="auth-form">
             <div className="form-group">
               <label className="form-label">Email</label>
               <input
@@ -180,6 +135,7 @@ function AuthModal({ onClose, onSuccess }) {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 autoFocus
+                disabled={loading || isRegistering}
               />
             </div>
             <div className="form-group">
@@ -197,29 +153,34 @@ function AuthModal({ onClose, onSuccess }) {
                 </button>
               </div>
             </div>
-            <div className="form-group">
-              <label className="form-label">Confirm Password</label>
-              <input
-                className="form-input"
-                type={showPwd ? 'text' : 'password'}
-                placeholder="Repeat password..."
-                value={confirmPwd}
-                onChange={(e) => setConfirmPwd(e.target.value)}
-              />
-            </div>
-            <div className="auth-bonus-notice" style={{ background: 'var(--bg-input)', borderColor: 'var(--border-color)', color: 'var(--text-secondary)' }}>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ marginRight: 6, verticalAlign: 'middle' }}><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-              <strong>Valid email required.</strong> You must verify your email before logging in.
-            </div>
+            {isRegistering && (
+              <>
+                <div className="form-group">
+                  <label className="form-label">Confirm Password</label>
+                  <input
+                    className="form-input"
+                    type={showPwd ? 'text' : 'password'}
+                    placeholder="Repeat password..."
+                    value={confirmPwd}
+                    onChange={(e) => setConfirmPwd(e.target.value)}
+                  />
+                </div>
+                <div className="auth-bonus-notice" style={{ background: 'var(--bg-input)', borderColor: 'var(--border-color)', color: 'var(--text-secondary)' }}>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ marginRight: 6, verticalAlign: 'middle' }}><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                  <strong>Valid email required.</strong> You must verify your email before logging in.
+                </div>
+              </>
+            )}
             <button className="btn btn-amber btn-lg" style={{ width: '100%', marginTop: 8 }} disabled={loading}>
-              {loading ? 'Creating account...' : 'Create Account'}
+              {loading ? 'Please wait...' : (isRegistering ? 'Create Account' : 'Continue')}
             </button>
-            <div className="auth-switch">
-              Already have an account?{' '}
-              <button type="button" onClick={() => { setTab('login'); setError(''); }}>Sign in</button>
-            </div>
+            {isRegistering && (
+              <div className="auth-switch">
+                <button type="button" onClick={() => { setIsRegistering(false); setError(''); }}>Back to Sign In</button>
+              </div>
+            )}
           </form>
-        ) : null}
+        )}
       </div>
     </div>
   );
@@ -295,6 +256,7 @@ export default function HomePage() {
   const [category, setCategory] = useState('All');
   const [loading, setLoading] = useState(true);
   const [showAuth, setShowAuth] = useState(false);
+  const [showWallet, setShowWallet] = useState(false);
   const [toast, setToast] = useState(null);
 
   const fetchUser = useCallback(async () => {
@@ -337,7 +299,13 @@ export default function HomePage() {
 
   return (
     <>
-      <Navbar user={user} onLogin={() => setShowAuth(true)} onLogout={handleLogout} activePage="Markets" />
+      <Navbar 
+        user={user} 
+        onLogin={() => setShowAuth(true)} 
+        onLogout={handleLogout} 
+        onOpenWallet={() => setShowWallet(true)}
+        activePage="Markets" 
+      />
       <div className="page-container">
         <h1 className="page-title">Prediction Markets</h1>
         <p className="page-subtitle">Trade on outcomes with virtual coins. Pick your side, earn VCoins.</p>
@@ -378,6 +346,17 @@ export default function HomePage() {
       </div>
 
       {showAuth && <AuthModal onClose={() => setShowAuth(false)} onSuccess={handleAuthSuccess} />}
+      {showWallet && user && (
+        <WalletModal 
+          user={user}
+          onClose={() => setShowWallet(false)} 
+          onDepositSuccess={() => {
+            fetchUser(); // Refresh balance
+            setShowWallet(false);
+            setToast({ message: 'Deposit successful!', type: 'success' });
+          }} 
+        />
+      )}
       {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
     </>
   );
