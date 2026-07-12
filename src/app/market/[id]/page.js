@@ -220,8 +220,8 @@ export default function MarketPage() {
       const data = await res.json();
       if (res.ok) {
         const msg = tradeAction === 'buy'
-          ? `Bought ${data.trade.shares_received.toFixed(2)} shares for ${data.trade.coins_spent.toFixed(2)} VCoins`
-          : `Sold ${data.trade.shares_sold.toFixed(2)} shares for ${data.trade.coins_received.toFixed(2)} VCoins`;
+          ? `Bought ${data.trade.shares_received.toFixed(2)} shares for KES ${data.trade.coins_spent.toFixed(2)}`
+          : `Sold ${data.trade.shares_sold.toFixed(2)} shares for KES ${data.trade.coins_received.toFixed(2)}`;
         setToast({ message: msg, type: 'success' });
         setAmount('');
         fetchData();
@@ -285,7 +285,7 @@ export default function MarketPage() {
         {market.description && <p className="page-subtitle">{market.description}</p>}
 
         <div style={{ display: 'flex', gap: 16, marginBottom: 24, fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-        <span>Total Volume Traded: <strong style={{ color: 'var(--text-secondary)', fontFamily: 'var(--font-mono)' }}>{Number(market.volume).toLocaleString()} VCoins</strong></span>
+        <span>Total Volume Traded: <strong style={{ color: 'var(--text-secondary)', fontFamily: 'var(--font-mono)' }}>KES {Number(market.volume).toLocaleString()}</strong></span>
         </div>
 
         <div className="two-col">
@@ -389,13 +389,13 @@ export default function MarketPage() {
                   </div>
 
                   <div className="form-group">
-                    <label className="form-label">{tradeAction === 'buy' ? 'Amount (VCoins)' : 'Shares to Sell'}</label>
+                    <label className="form-label">{tradeAction === 'buy' ? 'Amount (KES)' : 'Shares to Sell'}</label>
                     <input
                       className="form-input"
                       type="number"
                       min="0"
                       step="any"
-                      placeholder={tradeAction === 'buy' ? 'Enter VCoins to spend...' : 'Enter shares to sell...'}
+                      placeholder={tradeAction === 'buy' ? 'Enter KES to spend...' : 'Enter shares to sell...'}
                       value={amount}
                       onChange={(e) => setAmount(e.target.value)}
                     />

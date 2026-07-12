@@ -108,7 +108,7 @@ export async function POST(request) {
       const balance = Number(userRes.rows[0].balance);
       if (balance < MARKET_CREATION_COST) {
         await client.query('ROLLBACK');
-        return NextResponse.json({ error: `Insufficient balance. Creating a market costs ${MARKET_CREATION_COST} VCoins (refunded when market closes).` }, { status: 400 });
+        return NextResponse.json({ error: `Insufficient balance. Creating a market costs ${MARKET_CREATION_COST} KES (refunded when market closes).` }, { status: 400 });
       }
 
       // Deduct 100 VC from the creator
@@ -164,7 +164,7 @@ export async function POST(request) {
           options: createdOptions,
         },
         cost: MARKET_CREATION_COST,
-        message: `Market created! ${MARKET_CREATION_COST} VCoins deducted as seed liquidity (refunded when market closes).`,
+        message: `Market created! ${MARKET_CREATION_COST} KES deducted as seed liquidity (refunded when market closes).`,
       });
     } catch (e) {
       await client.query('ROLLBACK');

@@ -1,8 +1,8 @@
 import './globals.css';
 
 export const metadata = {
-  title: 'Strike Markets - Virtual Prediction Market',
-  description: 'Trade on outcomes with virtual coins. Strike Markets — predict the future, earn VCoins.',
+  title: 'Strike Markets - Real Money Prediction Market',
+  description: 'Trade on outcomes with real money. Strike Markets — predict the future, earn KES.',
   icons: {
     icon: '/logo.png',
     shortcut: '/logo.png',

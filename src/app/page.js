@@ -242,7 +242,7 @@ function MarketCard({ market, onClick }) {
       <div className="market-meta" style={{ display: 'flex', justifyContent: 'flex-start' }}>
         <div className="market-meta-item">
           <span>Total Volume Traded:</span>
-          <span className="market-meta-value" style={{ color: 'var(--text-secondary)' }}>{Number(market.volume).toLocaleString()} VCoins</span>
+          <span className="market-meta-value" style={{ color: 'var(--text-secondary)' }}>KES {Number(market.volume).toLocaleString()}</span>
         </div>
       </div>
     </div>
@@ -308,7 +308,7 @@ export default function HomePage() {
       />
       <div className="page-container">
         <h1 className="page-title">Prediction Markets</h1>
-        <p className="page-subtitle">Trade on outcomes with virtual coins. Pick your side, earn VCoins.</p>
+        <p className="page-subtitle">Trade on outcomes with real money. Pick your side, earn KES.</p>
 
         <div className="category-tabs">
           {CATEGORIES.map((cat) => (

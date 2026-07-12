@@ -159,7 +159,7 @@ export default function AdminPage() {
         {/* Stats Grid */}
         <div className="stats-grid" style={{ marginBottom: 36 }}>
           {[
-            { label: 'Total Trade Volume', val: fmt(stats?.total_volume), color: 'orange', sub: 'VCoins traded' },
+            { label: 'Total Trade Volume', val: fmt(stats?.total_volume), color: 'orange', sub: 'KES traded' },
             { label: 'Total House Profit', val: fmt(stats?.total_house_profit), color: 'green', sub: 'All revenue combined' },
             { label: 'Transaction Fees (10%)', val: fmt(stats?.total_fees), color: 'violet', sub: 'From buy/sell trades' },
             { label: 'Spread & Markup Profit', val: fmt(stats?.total_spread_profit), color: 'orange', sub: '20% overround/markdown' },

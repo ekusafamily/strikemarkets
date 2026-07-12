@@ -44,7 +44,7 @@ export default function CreatePage() {
       });
       const data = await res.json();
       if (res.ok) {
-        setToast({ message: 'Market created! 100 VCoins deducted as seed liquidity.', type: 'success' });
+        setToast({ message: 'Market created! 100 KES deducted as seed liquidity.', type: 'success' });
         // Refresh user to update balance in navbar
         fetch('/api/auth').then(r => r.json()).then(d => { if (d.user) setUser(d.user); });
         setTimeout(() => router.push(`/market/${data.market.id}`), 1500);
@@ -68,7 +68,7 @@ export default function CreatePage() {
         <p className="page-subtitle">Ask a question about the future and let the crowd predict the outcome.</p>
 
         <div style={{ background: 'rgba(232,93,4,0.1)', border: '1px solid rgba(232,93,4,0.3)', borderRadius: 10, padding: '12px 16px', marginBottom: 20, fontSize: '0.85rem', color: 'var(--accent-orange)' }}>
-          <strong>⚡ Cost: 100 VCoins</strong> — Deducted as seed liquidity for your market. Refunded when the market is resolved or voided.
+          <strong>⚡ Cost: 100 KES</strong> — Deducted as seed liquidity for your market. Refunded when the market is resolved or voided.
         </div>
 
         <form onSubmit={handleSubmit}>
@@ -118,11 +118,11 @@ export default function CreatePage() {
           </div>
 
           <button type="submit" className="btn btn-amber btn-lg" style={{ width: '100%' }} disabled={submitting || (user && Number(user.balance) < 100)}>
-            {submitting ? 'Creating...' : 'Create Market — 100 VCoins'}
+            {submitting ? 'Creating...' : 'Create Market — 100 KES'}
           </button>
           {user && Number(user.balance) < 100 && (
             <div style={{ textAlign: 'center', color: 'var(--accent-red)', fontSize: '0.8rem', marginTop: 8 }}>
-              Insufficient balance. You need at least 100 VCoins to create a market.
+              Insufficient balance. You need at least 100 KES to create a market.
             </div>
           )}
         </form>
