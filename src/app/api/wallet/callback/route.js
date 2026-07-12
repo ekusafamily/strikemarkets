@@ -69,10 +69,9 @@ export async function POST(request) {
           [amount, deposit.user_id]
         );
 
-        // 3. Log transaction
         await client.query(
-          \`INSERT INTO transactions (user_id, type, amount_coins, created_at)
-           VALUES ($1, 'deposit', $2, NOW())\`,
+          `INSERT INTO transactions (user_id, type, amount_coins, created_at)
+           VALUES ($1, 'deposit', $2, NOW())`,
           [deposit.user_id, amount]
         );
 
